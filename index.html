@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ogles Python Tools GUI (Pyodide)</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 16px; line-height: 1.6; font-size: 14px;}
+    h1 { margin: 0 0 12px; font-size: 22px; }
+    h2 { font-size: 18px; }
+    .note { margin: 6px 0 18px; opacity: 0.85; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+    .tabbtn {
+      border: 1px solid rgba(127,127,127,.35);
+      background: rgba(127,127,127,.10);
+      padding: 8px 12px; border-radius: 10px; cursor: pointer;
+      font-size: 14px; font-weight: 500;
+    }
+    .tabbtn.active { background: rgba(0,120,215,.20); border-color: rgba(0,120,215,.45); }
+    .panel { display: none; border: 1px solid rgba(127,127,127,.35); border-radius: 14px; padding: 16px; }
+    .panel.active { display: block; }
+    .grid { display: grid; grid-template-columns: repeat(2, max-content); gap: 16px 24px; margin-top: 8px; align-items: start;}
+    label { display: block; font-size: 13px; opacity: .9; margin-bottom: 4px; }
+    input, select {
+      width: 180px; padding: 6px 8px; border-radius: 8px;
+      border: 1px solid rgba(127,127,127,.08); background-color: Canvas;
+      color: CanvasText; font-size: 15px
+}
+    button {
+      
+  min-height: 44px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 500;	
+  border: 1px solid rgba(127,127,127,.35);
+  background: rgba(0,120,215,.18);
+  cursor: pointer;
+    }
+    button:hover { filter: brightness(1.05); }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+    .out {
+      margin-top: 12px; padding: 12px; border-radius: 12px;
+      border: 1px dashed rgba(127,127,127,.45);
+      white-space: pre-wrap;
+    }
+    .status { font-size: 13px; opacity: .85; }
+    .small { font-size: 12px; opacity: .75; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  </style>
+</head>
+<body>
+  <h1>Ogles Python Tools GUI</h1>
+  <div class="note">
+    Runs fully in browser using <span class="mono">Pyodide</span>. Internet connection required.
+  </div>
+
+  <div class="status" id="status">Loading Python runtime…</div>
+
+  <div class="tabs" role="tablist">
+    <button class="tabbtn active" data-tab="pct">Percent Change</button>
+    <button class="tabbtn" data-tab="si">Simple Interest</button>
+    <button class="tabbtn" data-tab="ci">Compound Interest</button>
+    <button class="tabbtn" data-tab="dbd">Days Between Dates</button>
+    <button class="tabbtn" data-tab="dax">Date ± X Days</button>
+  </div>
+
+  <!-- Percent Change -->
+  <section class="panel active" id="pct">
+    <h2>Percent Change</h2>
+    <div class="grid">
+      <div>
+        <label>Old value</label>
+        <input id="pct_old" type="number" step="any" value="100" />
+      </div>
+      <div>
+        <label>New value</label>
+        <input id="pct_new" type="number" step="any" value="125" />
+      </div>
+    </div>
+    <div class="row">
+      <button onclick="runTool('percent_change')">Calculate</button>
+    </div>
+    <div class="out" id="pct_out"></div>
+    <div class="small">Note: If old value = 0, the script will show infinite percent change.</div>
+  </section>
+
+  <!-- Simple Interest -->
+  <section class="panel" id="si">
+    <h2>Simple Interest</h2>
+    <div class="grid">
+      <div>
+        <label>Principal ($)</label>
+        <input id="si_p" type="number" step="any" value="1000" />
+      </div>
+      <div>
+        <label>Annual rate (%)</label>
+        <input id="si_r" type="number" step="any" value="5" />
+      </div>
+      <div>
+        <label>Unit: Years / Days</label>
+        <select id="si_unit">
+          <option value="years" selected>Years</option>
+          <option value="days">Days</option>
+        </select>
+      </div>
+      <div>
+        <label>Time value</label>
+        <input id="si_t" type="number" step="any" value="5" />
+      </div>
+    </div>
+    <div class="row">
+      <button onclick="runTool('simple_interest')">Calculate</button>
+    </div>
+    <div class="out" id="si_out"></div>
+    <div class="small">Time can be calculated in years or days.</div>
+  </section>
+
+  <!-- Compound Interest -->
+  <section class="panel" id="ci">
+    <h2>Compound Interest</h2>
+    <div class="grid">
+      <div>
+        <label>Principal ($)</label>
+        <input id="ci_p" type="number" step="any" value="1000" />
+      </div>
+      <div>
+        <label>Annual rate (%)</label>
+        <input id="ci_r" type="number" step="any" value="5" />
+      </div>
+      <div>
+        <label>Unit: Years / Days</label>
+        <select id="ci_unit">
+          <option value="years" selected>Years</option>
+          <option value="days">Days</option>
+        </select>
+      </div>
+      <div>
+        <label>Time value</label>
+        <input id="ci_t" type="number" step="any" value="5" />
+      </div>
+      <div>
+        <label>Compounds per year</label>
+        <input id="ci_n" type="number" step="1" value="1" />
+      </div>
+
+    </div>
+    <div class="row">
+      <button onclick="runTool('compound_interest')">Calculate</button>
+    </div>
+    <div class="out" id="ci_out"></div>
+    <div class="small">Time can be calculated in years or days.</div>
+  </section>
+
+  <!-- Days Between Dates -->
+  <section class="panel" id="dbd">
+    <h2>Days Between Dates</h2>
+    <div class="grid">
+      <div>
+        <label>Start date</label>
+        <input id="dbd_start" type="date" value="2026-05-01" />
+      </div>
+      <div>
+        <label>End date</label>
+        <input id="dbd_end" type="date" value="2026-05-30" />
+      </div>
+      <div>
+        <label>Exclude starting date?</label>
+        <select id="dbd_excl">
+          <option value="no" selected>No (start/end included)</option>
+          <option value="yes">Yes (counts after start)</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <button onclick="runTool('days_between_dates')">Calculate</button>
+    </div>
+    <div class="out" id="dbd_out"></div>
+    <div class="small">Default includes start and end date.  Option to exclude start date.</div>
+  </section>
+
+  <!-- Date After/Before X Days -->
+  <section class="panel" id="dax">
+    <h2>Date ± X Days</h2>
+    <div class="grid">
+      <div>
+        <label>Start Date</label>
+        <input id="dax_date" type="date" value="2026-05-01" />
+      </div>
+      <div>
+        <label>Mode: Before / After</label>
+        <select id="dax_mode">
+          <option value="after" selected>After</option>
+          <option value="before">Before</option>
+        </select>
+      </div>
+      <div>
+        <label>Days</label>
+        <input id="dax_days" type="number" step="1" value="28" />
+      </div>
+    </div>
+    <div class="row">
+      <button onclick="runTool('date_after_before')">Calculate</button>
+    </div>
+    <div class="out" id="dax_out"></div>
+    <div class="small">Calculate the date “after” or “before” a given date.  Does not include the start date.  </div>
+  </section>
+
+  <script>
+    // --- Tabs ---
+    const tabButtons = document.querySelectorAll(".tabbtn");
+    const panels = document.querySelectorAll(".panel");
+    tabButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        tabButtons.forEach(b => b.classList.remove("active"));
+        panels.forEach(p => p.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById(btn.dataset.tab).classList.add("active");
+      });
+    });
+
+    // --- Pyodide loader ---
+    let pyodideReady = (async () => {
+      const status = document.getElementById("status");
+      try {
+        const s = document.createElement("script");
+        s.src = "https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js";
+        s.onload = async () => {
+          window.pyodide = await loadPyodide();
+          await window.pyodide.runPythonAsync(PY_CODE);
+          status.textContent = "Python runtime loaded. Ready.";
+        };
+        s.onerror = () => status.textContent = "Failed to load Pyodide (network issue).";
+        document.head.appendChild(s);
+      } catch (e) {
+        status.textContent = "Failed to initialize Python runtime.";
+      }
+    })();
+
+    // --- Python implementation (GUI-friendly) ---
+    const PY_CODE = `
+from datetime import date, datetime, timedelta
+import math
+
+def percent_change(old, new):
+    if old == 0:
+        return math.inf
+    return ((new - old) / abs(old)) * 100.0
+
+def days_to_years(days):
+    return days / 365.0
+
+def simple_interest(principal, annual_rate_decimal, years):
+    return principal * annual_rate_decimal * years
+
+def compound_interest(principal, annual_rate_decimal, years, compounds_per_year=1):
+    # total = P*(1 + r/n)^(n*t)
+    total = principal * ((1 + (annual_rate_decimal / compounds_per_year)) ** (compounds_per_year * years))
+    return total - principal, total
+
+def days_between_dates(start_iso, end_iso, exclude_start=False):
+    s = datetime.fromisoformat(start_iso).date()
+    e = datetime.fromisoformat(end_iso).date()
+    delta = (e - s).days
+    # inclusive of both start and end by default
+    if exclude_start:
+        return max(0, delta)  # start excluded => count days after start to end inclusive
+    return max(0, delta + 1)
+
+def date_after_before(base_iso, days, mode="after"):
+    d = datetime.fromisoformat(base_iso).date()
+    if mode == "before":
+        return (d - timedelta(days=days)).isoformat()
+    return (d + timedelta(days=days)).isoformat()
+`;
+
+    // --- Bridge: run tool based on current panel inputs ---
+    async function runTool(which) {
+      await pyodideReady;
+      const status = document.getElementById("status");
+      if (!window.pyodide) {
+        status.textContent = "Python runtime not available.";
+        return;
+      }
+      status.textContent = "Running…";
+
+      const outMap = {
+        percent_change: "pct_out",
+        simple_interest: "si_out",
+        compound_interest: "ci_out",
+        days_between_dates: "dbd_out",
+        date_after_before: "dax_out",
+      };
+
+      function setOut(text) {
+        document.getElementById(outMap[which]).textContent = text;
+      }
+
+      try {
+        if (which === "percent_change") {
+          const oldv = parseFloat(document.getElementById("pct_old").value);
+          const newv = parseFloat(document.getElementById("pct_new").value);
+          window.pyodide.globals.set("oldv", oldv);
+          window.pyodide.globals.set("newv", newv);
+          const res = await window.pyodide.runPythonAsync(`percent_change(oldv, newv)`);
+          if (res === Infinity) setOut("Percent change: ∞% (old value was 0)");
+          else setOut(`Percent change: ${res.toFixed(2)}%`);
+        }
+
+        if (which === "simple_interest") {
+          const p = parseFloat(document.getElementById("si_p").value);
+          const rPct = parseFloat(document.getElementById("si_r").value);
+          const unit = document.getElementById("si_unit").value;
+          const tVal = parseFloat(document.getElementById("si_t").value);
+
+          window.pyodide.globals.set("p", p);
+          window.pyodide.globals.set("r", rPct / 100.0);
+          window.pyodide.globals.set("unit", unit);
+          window.pyodide.globals.set("tVal", tVal);
+
+          const res = await window.pyodide.runPythonAsync(`
+years = days_to_years(tVal) if unit == "days" else tVal
+interest = simple_interest(p, r, years)
+total = p + interest
+(interest, total, years)
+`);
+          const [interest, total, years] = res.toJs();
+          setOut(
+            `Time used: ${years.toFixed(6)} years\n` +
+            `Simple interest earned: $${interest.toFixed(2)}\n` +
+            `Total amount: $${total.toFixed(2)}`
+          );
+        }
+
+        if (which === "compound_interest") {
+          const p = parseFloat(document.getElementById("ci_p").value);
+          const rPct = parseFloat(document.getElementById("ci_r").value);
+          const n = parseInt(document.getElementById("ci_n").value || "1", 10);
+          const unit = document.getElementById("ci_unit").value;
+          const tVal = parseFloat(document.getElementById("ci_t").value);
+
+          window.pyodide.globals.set("p", p);
+          window.pyodide.globals.set("r", rPct / 100.0);
+          window.pyodide.globals.set("n", n);
+          window.pyodide.globals.set("unit", unit);
+          window.pyodide.globals.set("tVal", tVal);
+
+          const res = await window.pyodide.runPythonAsync(`
+years = days_to_years(tVal) if unit == "days" else tVal
+interest, total = compound_interest(p, r, years, n)
+(interest, total, years)
+`);
+          const [interest, total, years] = res.toJs();
+          setOut(
+            `Time used: ${years.toFixed(6)} years\n` +
+            `Compound interest earned: $${interest.toFixed(2)}\n` +
+            `Total amount: $${total.toFixed(2)}`
+          );
+        }
+
+        if (which === "days_between_dates") {
+          const s = document.getElementById("dbd_start").value;
+          const e = document.getElementById("dbd_end").value;
+          const excl = document.getElementById("dbd_excl").value === "yes";
+
+          window.pyodide.globals.set("s", s);
+          window.pyodide.globals.set("e", e);
+          window.pyodide.globals.set("excl", excl);
+
+          const res = await window.pyodide.runPythonAsync(`days_between_dates(s, e, excl)`);
+          setOut(`Days between: ${res} day(s)`);
+        }
+
+        if (which === "date_after_before") {
+          const d = document.getElementById("dax_date").value;
+          const mode = document.getElementById("dax_mode").value;
+          const days = parseInt(document.getElementById("dax_days").value || "0", 10);
+
+          window.pyodide.globals.set("d", d);
+          window.pyodide.globals.set("mode", mode);
+          window.pyodide.globals.set("days", days);
+
+          const res = await window.pyodide.runPythonAsync(`date_after_before(d, days, mode)`);
+          setOut(`Resulting date: ${res}`);
+        }
+
+        status.textContent = "Done.";
+      } catch (err) {
+        status.textContent = "Error.";
+        setOut(String(err));
+      }
+    }
+  </script>
+</body>
+</html>
